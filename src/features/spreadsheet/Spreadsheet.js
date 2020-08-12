@@ -11,7 +11,12 @@ function calculateId(indexX, indexY) {
   return letter + indexX;
 }
 
-export default function Spreadsheet({ size, CellBuilder, height, width }) {
+export default function Spreadsheet({
+  size,
+  CellBuilder,
+  minCellHeight,
+  cellWidth,
+}) {
   const root = useRef(null);
   const [activeItemsCountX, setActiveItemsCountX] = useState(0);
   const [activeItemsCountY, setActiveItemsCountY] = useState(0);
@@ -19,17 +24,21 @@ export default function Spreadsheet({ size, CellBuilder, height, width }) {
   const [firstItemIndexY, setFirstItemIndexY] = useState(0);
   useEffect(() => {
     // Calculate items in view
-    root.current.style.width = `${size.x * width}px`;
-    root.current.style.height = `${size.y * height}px`;
-    setActiveItemsCountX(Math.ceil(window.innerWidth / width) + 4);
-    setActiveItemsCountY(Math.ceil(window.innerHeight / height) + 4);
+    root.current.style.width = `${size.x * cellWidth}px`;
+    // TODO:
+    root.current.style.height = `${size.y * minCellHeight}px`;
+    setActiveItemsCountX(Math.ceil(window.innerWidth / cellWidth) + 4);
+    // TODO:
+    setActiveItemsCountY(Math.ceil(window.innerHeight / minCellHeight) + 4);
+
     function handleScroll() {
       const firstItemX = Math.max(
-        Math.floor(window.pageXOffset / width) - 2,
+        Math.floor(window.pageXOffset / cellWidth) - 2,
         0
       );
+      // TODO:
       const firstItemY = Math.max(
-        Math.floor(window.pageYOffset / height) - 2,
+        Math.floor(window.pageYOffset / minCellHeight) - 2,
         0
       );
       setFirstItemIndexX(firstItemX);
@@ -39,7 +48,7 @@ export default function Spreadsheet({ size, CellBuilder, height, width }) {
     return () => {
       document.removeEventListener("scroll", handleScroll, { passive: true });
     };
-  }, [size, height, width]);
+  }, [size, minCellHeight, cellWidth]);
 
   const renderedChildren = [];
   for (
@@ -59,8 +68,9 @@ export default function Spreadsheet({ size, CellBuilder, height, width }) {
           id={id}
           indexX={indexX}
           indexY={indexY}
-          width={width}
-          height={height}
+          width={cellWidth}
+          minHeight={minCellHeight}
+          visibleRows={activeItemsCountY}
         />
       );
     }
