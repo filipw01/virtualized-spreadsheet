@@ -65,9 +65,9 @@ export default function Spreadsheet({
       renderedChildren.push(
         <CellBuilder
           key={id}
+          column={indexX}
+          row={indexY}
           id={id}
-          indexX={indexX}
-          indexY={indexY}
           width={cellWidth}
           minHeight={minCellHeight}
           visibleRows={activeItemsCountY}
