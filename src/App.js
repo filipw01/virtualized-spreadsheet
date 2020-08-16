@@ -7,8 +7,8 @@ function App() {
     <Spreadsheet
       size={{ x: 10000, y: 10000 }}
       CellBuilder={Cell}
-      minCellHeight={40}
-      cellWidth={100}
+      minCellHeight={100}
+      cellWidth={300}
     />
   );
 }

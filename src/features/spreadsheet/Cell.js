@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   createCellSelector,
@@ -12,37 +12,27 @@ export default React.memo(function Item({
   row,
   column,
   width,
+  offsetTop,
+  height,
   minHeight,
-  visibleRows,
 }) {
   const cell = useSelector(createCellSelector(id));
-  const rows = useSelector((state) => state.spreadsheet.rows);
   const dispatch = useDispatch();
   const field = useRef(null);
 
   function resizeField(element) {
-    element.style.height = "0";
-    element.style.height = element.scrollHeight + "px";
-    const height = element.style.height.slice(0, -2);
-    dispatch(changeRowHeight({ row, column, height, minHeight }));
+    element.style.height = "auto";
+    const tempHeight = element.scrollHeight;
+    if (tempHeight !== height) {
+      element.style.height = `${Math.max(height, tempHeight)}px`;
+      dispatch(changeRowHeight({ row, column, height: tempHeight, minHeight }));
+    }
+    element.style.height = `${height}px`;
   }
 
   function handleChange() {
     resizeField(field.current);
     dispatch(setCell({ id, content: field.current.value }));
-  }
-  function getRowHeight(row) {
-    if (rows[row]) {
-      return Math.max(...rows[row].map((cell) => cell.height));
-    }
-    return minHeight;
-  }
-  function getRowOffset(rowNumber) {
-    let offset = 0;
-    for (let index = 0; index < rowNumber; index++) {
-      offset += getRowHeight(index);
-    }
-    return offset;
   }
 
   return (
@@ -50,12 +40,9 @@ export default React.memo(function Item({
       ref={field}
       className={style.cell}
       style={{
-        // backgroundColor: "#" + (((1 << 24) * Math.random()) | 0).toString(16),
-        zIndex: visibleRows - (row % visibleRows),
-        top: `${getRowOffset(row)}px`,
-        left: `${column * width}px`,
+        transform: `translate(${column * width}px,${offsetTop}px)`,
         width: `${width}px`,
-        height: `${getRowHeight(row)}px`,
+        height: `${height}px`,
       }}
       onChange={handleChange}
       defaultValue={cell || id}

@@ -15,22 +15,24 @@ export const counterSlice = createSlice({
       if (state.rows[row] === undefined) {
         state.rows[row] = [];
       }
+      const index = state.rows[row].findIndex((cell) => cell.column === column);
       if (height > minHeight) {
-        if (state.rows[row].find((cell) => cell.column === column)) {
-          state.rows[row] = state.rows[row].map((cell) => {
-            if (cell.column === column) {
-              return { column, height };
-            }
-            return cell;
-          });
+        // Height exceeds minimum
+        const newHeight = { column, height };
+        // Replace if exists else add as new
+        if (index !== -1) {
+          state.rows[row].splice(index, 1, newHeight);
         } else {
-          state.rows[row].push({ column, height });
+          state.rows[row].push(newHeight);
         }
       } else {
-        state.rows[row] = state.rows[row].filter(
-          ({ column: stateColumn }) => stateColumn !== column
-        );
-        if (state.rows[row] && state.rows[row].length === 0) {
+        // Height below minimum
+        // Delete if exists
+        if (index !== -1) {
+          state.rows[row].splice(index, 1);
+        }
+        // Delete row if empty
+        if (state.rows[row].length === 0) {
           delete state.rows[row];
         }
       }
