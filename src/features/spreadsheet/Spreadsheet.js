@@ -19,11 +19,12 @@ export default function Spreadsheet({
   cellWidth,
 }) {
   const root = useRef(null);
-  const [activeItemsCountX, setActiveItemsCountX] = useState(0);
-  const [activeItemsCountY, setActiveItemsCountY] = useState(0);
-  const [firstItemIndexX, setFirstItemIndexX] = useState(0);
-  const [firstItemIndexY, setFirstItemIndexY] = useState(0);
+  const [activeColumns, setActiveColumns] = useState(0);
+  const [activeRows, setActiveRows] = useState(0);
+  const [firstColumn, setFirstColumn] = useState(0);
+  const [firstRow, setFirstRow] = useState(0);
   const rows = useSelector((state) => state.spreadsheet.rows);
+
   const getRowHeight = useCallback(
     (row) => {
       if (rows[row]) {
@@ -33,6 +34,7 @@ export default function Spreadsheet({
     },
     [minCellHeight, rows]
   );
+
   const getRowOffset = useCallback(
     (rowNumber) => {
       let offset = 0;
@@ -48,21 +50,22 @@ export default function Spreadsheet({
     // Calculate items in view
     root.current.style.width = `${size.x * cellWidth}px`;
     root.current.style.height = `${getRowOffset(size.y)}px`;
-    setActiveItemsCountX(Math.ceil(window.innerWidth / cellWidth) + 4);
-    setActiveItemsCountY(Math.ceil(window.innerHeight / minCellHeight) + 4);
+    setActiveColumns(Math.ceil(window.innerWidth / cellWidth) + 4);
+    setActiveRows(Math.ceil(window.innerHeight / minCellHeight) + 4);
 
+    // Change first active item
     function handleScroll() {
-      const firstItemX = Math.max(
+      const firstColumnIndex = Math.max(
         Math.floor(window.pageXOffset / cellWidth) - 2,
         0
       );
-      let firstItemY = 0;
-      while (getRowOffset(firstItemY) < window.pageYOffset) {
-        firstItemY++;
+      let firstRowIndex = 0;
+      while (getRowOffset(firstRowIndex) < window.pageYOffset) {
+        firstRowIndex++;
       }
-      firstItemY = Math.max(firstItemY - 2, 0);
-      setFirstItemIndexX(firstItemX);
-      setFirstItemIndexY(firstItemY);
+      firstRowIndex = Math.max(firstRowIndex - 2, 0);
+      setFirstColumn(firstColumnIndex);
+      setFirstRow(firstRowIndex);
     }
     document.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
@@ -71,14 +74,10 @@ export default function Spreadsheet({
   }, [size, minCellHeight, cellWidth, getRowOffset, getRowHeight]);
 
   const renderedChildren = [];
-  for (
-    let row = firstItemIndexY;
-    row < firstItemIndexY + activeItemsCountY;
-    row++
-  ) {
+  for (let row = firstRow; row < firstRow + activeRows; row++) {
     for (
-      let column = firstItemIndexX;
-      column < firstItemIndexX + activeItemsCountX;
+      let column = firstColumn;
+      column < firstColumn + activeColumns;
       column++
     ) {
       const id = calculateId(column, row);
